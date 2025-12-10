@@ -40,11 +40,11 @@ class VL53L8CX {
 
         Status startRanging();
         Status stopRanging();
+        bool dataReady();
 
         /* Communication/read helpers: call underlying C API and update internal cache */
         Status getRangingData(VL53L8CX_ResultsData *p_results); /* fills internal _results and immediately get it */
         Status readRangingData(); /* only updates internal _results */
-        Status refreshSettings(); /* updates platform fields (resolution, freq, integration time, etc.) */
 
         inline uint8_t  getResolution() const         { return _cfg.platform.resolution;                }
         inline uint8_t  getRangingFrequencyHz() const { return _cfg.platform.ranging_freq_hz;           }
@@ -54,9 +54,10 @@ class VL53L8CX {
         inline uint8_t  getTargetOrder() const        { return _cfg.platform.target_order;              }
         inline bool     isSyncPinEnabled() const      { return (bool)_cfg.platform.is_sync_pin_enabled; }
         inline uint32_t getVHVRepeatCount() const     { return _cfg.platform.VHV_repeat_cnt;            }
-        inline bool     isDataReady() const           { return (bool)_cfg.platform.is_drdy;             }
 
         inline const VL53L8CX_ResultsData& results() const { return _results; }
+
+        Status refreshSettings(); /* updates platform fields (resolution, freq, integration time, etc.) */
 
         Status dciReadData(uint8_t *data, uint32_t index, uint16_t data_size);
         Status dciWriteData(uint8_t *data, uint32_t index, uint16_t data_size);
@@ -65,11 +66,27 @@ class VL53L8CX {
 
         VL53L8CX_Configuration *getConfig() { return &_cfg; }
 
+        /* Single-value getters from cached results. Each returns the value and
+         * sets `ok` to true when the index is valid, false otherwise. */
+        int16_t  getDistanceMm(uint8_t zone, uint8_t target_idx, bool &ok) const;
+        uint16_t getRangeSigmaMm(uint8_t zone, uint8_t target_idx, bool &ok) const;
+        uint32_t getSignalPerSpad(uint8_t zone, uint8_t target_idx, bool &ok) const;
+        uint8_t  getReflectancePercent(uint8_t zone, uint8_t target_idx, bool &ok) const;
+        uint8_t  getTargetStatus(uint8_t zone, uint8_t target_idx, bool &ok) const;
+
+        uint32_t getAmbientPerSpad(uint8_t zone, bool &ok) const;
+        uint8_t  getNbTargetDetected(uint8_t zone, bool &ok) const;
+        uint32_t getNbSpadsEnabled(uint8_t zone, bool &ok) const;
+
+        /* Motion indicator getters (if enabled). `motion_idx` range: 0..31 */
+        uint32_t getMotion(uint8_t motion_idx, bool &ok) const;
+        uint32_t getMotionGlobalIndicator1(bool &ok) const;
+        uint32_t getMotionGlobalIndicator2(bool &ok) const;
+        uint8_t  getMotionStatus(bool &ok) const;
+        uint8_t  getMotionNbOfDetectedAggregates(bool &ok) const;
+
     private:
         VL53L8CX_Configuration _cfg;
         VL53L8CX_ResultsData _results;
-
-        Status _init();
-        Status _checkDRDY(uint8_t *p_isReady);
 
 };

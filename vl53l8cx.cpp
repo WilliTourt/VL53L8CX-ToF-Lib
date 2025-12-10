@@ -3,6 +3,8 @@
 #include "vl53l8cx.h"
 #include <cstring>
 
+
+
 static VL53L8CX::Status _map_status(uint8_t s) {
     switch(s) {
         case VL53L8CX_STATUS_OK:                return VL53L8CX::Status::OK;
@@ -27,22 +29,20 @@ VL53L8CX::VL53L8CX(I2C_HandleTypeDef *hi2c, uint8_t i2c_address) {
 #endif
 
 #ifdef HAL_SPI_MODULE_ENABLED
-VL53L8CX::VL53L8CX(void *hspi, GPIO_TypeDef *CS_GPIOx, uint8_t CS_Pin) {
+VL53L8CX::VL53L8CX(SPI_HandleTypeDef *hspi, GPIO_TypeDef *CS_GPIOx, uint8_t CS_Pin) {
     std::memset(&_cfg, 0, sizeof(_cfg));
-    _cfg.platform.hspi = (SPI_HandleTypeDef*)hspi;
+    _cfg.platform.hspi = hspi;
     _cfg.platform.cs_port = CS_GPIOx;
     _cfg.platform.cs_pin = CS_Pin;
     _cfg.platform.comms_type = VL53L8CX_COMMS_SPI;
 }
 #endif
 
-VL53L8CX::Status VL53L8CX::_init() {
-    uint8_t status = vl53l8cx_init(&_cfg);
-    return _map_status(status);
-}
+
 
 VL53L8CX::Status VL53L8CX::begin() {
-    return _init();
+    uint8_t status = vl53l8cx_init(&_cfg);
+    return _map_status(status);
 }
 
 bool VL53L8CX::isAlive() {
@@ -71,12 +71,10 @@ VL53L8CX::Status VL53L8CX::stopRanging() {
     return _map_status(status);
 }
 
-VL53L8CX::Status VL53L8CX::_checkDRDY(uint8_t *p_isReady) {
-    uint8_t status = vl53l8cx_check_data_ready(&_cfg, p_isReady);
-    if (status == VL53L8CX_STATUS_OK) {
-        _cfg.platform.is_drdy = *p_isReady;
-    }
-    return _map_status(status);
+bool VL53L8CX::dataReady() {
+    uint8_t drdy = 0;
+    uint8_t status = vl53l8cx_check_data_ready(&_cfg, &drdy);
+    return ((status == VL53L8CX_STATUS_OK) && (drdy != 0));
 }
 
 VL53L8CX::Status VL53L8CX::getRangingData(VL53L8CX_ResultsData *p_results) {
@@ -143,4 +141,159 @@ VL53L8CX::Status VL53L8CX::dciReplaceData(uint8_t *data, uint32_t index, uint16_
     uint8_t status = vl53l8cx_dci_replace_data(&_cfg, data, index, data_size,
                                                new_data, new_data_size, new_data_pos);
     return _map_status(status);
+}
+
+
+/* ------------------------- Single-value getters ------------------------- */
+
+int16_t VL53L8CX::getDistanceMm(uint8_t zone, uint8_t target_idx, bool &ok) const {
+    ok = false;
+#ifndef VL53L8CX_DISABLE_DISTANCE_MM
+    uint8_t res = _cfg.platform.resolution;
+    if ((zone < res) && (target_idx < VL53L8CX_NB_TARGET_PER_ZONE)) {
+        uint16_t idx = (uint16_t)zone * VL53L8CX_NB_TARGET_PER_ZONE + target_idx;
+        ok = true;
+        return _results.distance_mm[idx];
+    }
+#endif
+    return (int16_t)0;
+}
+
+uint16_t VL53L8CX::getRangeSigmaMm(uint8_t zone, uint8_t target_idx, bool &ok) const {
+    ok = false;
+#ifndef VL53L8CX_DISABLE_RANGE_SIGMA_MM
+    uint8_t res = _cfg.platform.resolution;
+    if ((zone < res) && (target_idx < VL53L8CX_NB_TARGET_PER_ZONE)) {
+        uint16_t idx = (uint16_t)zone * VL53L8CX_NB_TARGET_PER_ZONE + target_idx;
+        ok = true;
+        return _results.range_sigma_mm[idx];
+    }
+#endif
+    return (uint16_t)0;
+}
+
+uint32_t VL53L8CX::getSignalPerSpad(uint8_t zone, uint8_t target_idx, bool &ok) const {
+    ok = false;
+#ifndef VL53L8CX_DISABLE_SIGNAL_PER_SPAD
+    uint8_t res = _cfg.platform.resolution;
+    if ((zone < res) && (target_idx < VL53L8CX_NB_TARGET_PER_ZONE)) {
+        uint16_t idx = (uint16_t)zone * VL53L8CX_NB_TARGET_PER_ZONE + target_idx;
+        ok = true;
+        return _results.signal_per_spad[idx];
+    }
+#endif
+    return (uint32_t)0;
+}
+
+uint8_t VL53L8CX::getReflectancePercent(uint8_t zone, uint8_t target_idx, bool &ok) const {
+    ok = false;
+#ifndef VL53L8CX_DISABLE_REFLECTANCE_PERCENT
+    uint8_t res = _cfg.platform.resolution;
+    if ((zone < res) && (target_idx < VL53L8CX_NB_TARGET_PER_ZONE)) {
+        uint16_t idx = (uint16_t)zone * VL53L8CX_NB_TARGET_PER_ZONE + target_idx;
+        ok = true;
+        return _results.reflectance[idx];
+    }
+#endif
+    return (uint8_t)0;
+}
+
+uint8_t VL53L8CX::getTargetStatus(uint8_t zone, uint8_t target_idx, bool &ok) const {
+    ok = false;
+#ifndef VL53L8CX_DISABLE_TARGET_STATUS
+    uint8_t res = _cfg.platform.resolution;
+    if ((zone < res) && (target_idx < VL53L8CX_NB_TARGET_PER_ZONE)) {
+        uint16_t idx = (uint16_t)zone * VL53L8CX_NB_TARGET_PER_ZONE + target_idx;
+        ok = true;
+        return _results.target_status[idx];
+    }
+#endif
+    return (uint8_t)0;
+}
+
+uint32_t VL53L8CX::getAmbientPerSpad(uint8_t zone, bool &ok) const {
+    ok = false;
+#ifndef VL53L8CX_DISABLE_AMBIENT_PER_SPAD
+    uint8_t res = _cfg.platform.resolution;
+    if (zone < res) {
+        ok = true;
+        return _results.ambient_per_spad[zone];
+    }
+#endif
+    return (uint32_t)0;
+}
+
+uint8_t VL53L8CX::getNbTargetDetected(uint8_t zone, bool &ok) const {
+    ok = false;
+#ifndef VL53L8CX_DISABLE_NB_TARGET_DETECTED
+    uint8_t res = _cfg.platform.resolution;
+    if (zone < res) {
+        ok = true;
+        return _results.nb_target_detected[zone];
+    }
+#endif
+    return (uint8_t)0;
+}
+
+uint32_t VL53L8CX::getNbSpadsEnabled(uint8_t zone, bool &ok) const {
+    ok = false;
+#ifndef VL53L8CX_DISABLE_NB_SPADS_ENABLED
+    uint8_t res = _cfg.platform.resolution;
+    if (zone < res) {
+        ok = true;
+        return _results.nb_spads_enabled[zone];
+    }
+#endif
+    return (uint32_t)0;
+}
+
+uint32_t VL53L8CX::getMotion(uint8_t motion_idx, bool &ok) const {
+    ok = false;
+#ifndef VL53L8CX_DISABLE_MOTION_INDICATOR
+    if (motion_idx < 32) {
+        ok = true;
+        return _results.motion_indicator.motion[motion_idx];
+    }
+#endif
+    return (uint32_t)0;
+}
+
+uint32_t VL53L8CX::getMotionGlobalIndicator1(bool &ok) const {
+    ok = false;
+#ifndef VL53L8CX_DISABLE_MOTION_INDICATOR
+    ok = true;
+    return _results.motion_indicator.global_indicator_1;
+#else
+    return (uint32_t)0;
+#endif
+}
+
+uint32_t VL53L8CX::getMotionGlobalIndicator2(bool &ok) const {
+    ok = false;
+#ifndef VL53L8CX_DISABLE_MOTION_INDICATOR
+    ok = true;
+    return _results.motion_indicator.global_indicator_2;
+#else
+    return (uint32_t)0;
+#endif
+}
+
+uint8_t VL53L8CX::getMotionStatus(bool &ok) const {
+    ok = false;
+#ifndef VL53L8CX_DISABLE_MOTION_INDICATOR
+    ok = true;
+    return _results.motion_indicator.status;
+#else
+    return (uint8_t)0;
+#endif
+}
+
+uint8_t VL53L8CX::getMotionNbOfDetectedAggregates(bool &ok) const {
+    ok = false;
+#ifndef VL53L8CX_DISABLE_MOTION_INDICATOR
+    ok = true;
+    return _results.motion_indicator.nb_of_detected_aggregates;
+#else
+    return (uint8_t)0;
+#endif
 }

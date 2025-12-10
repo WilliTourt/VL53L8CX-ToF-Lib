@@ -69,7 +69,6 @@ typedef struct {
 
 	uint8_t               pwr_mode;
 
-	uint8_t               is_drdy;
 	uint8_t 			  resolution;
 	uint8_t               ranging_freq_hz;
 	uint8_t               ranging_mode;
@@ -122,8 +121,8 @@ typedef struct {
 // #define VL53L8CX_DISABLE_RANGE_SIGMA_MM
 // #define VL53L8CX_DISABLE_DISTANCE_MM
 // #define VL53L8CX_DISABLE_REFLECTANCE_PERCENT
-// #define VL53L8CX_DISABLE_TARGET_STATUS
-// #define VL53L8CX_DISABLE_MOTION_INDICATOR
+#define VL53L8CX_DISABLE_TARGET_STATUS
+#define VL53L8CX_DISABLE_MOTION_INDICATOR
 
 /**
  * @param (VL53L8CX_Platform*) p_platform : Pointer of VL53L8CX platform
