@@ -1,5 +1,7 @@
 # VL53L8CX ToF 传感器 C++ 库
 
+> **Language/语言**: [English](README.md) | [简体中文](README-zh-CN.md)
+
 一个用于 VL53L8CX 飞行时间（ToF）多区域测距传感器的 C++ 封装库，适用于STM32 HAL。该库在官方 VL53L8CX ULD驱动 C API 之上提供了面向对象的接口。
 
 ## 特性

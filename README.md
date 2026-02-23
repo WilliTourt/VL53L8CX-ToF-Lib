@@ -1,5 +1,7 @@
 # VL53L8CX ToF Sensor C++ Library
 
+> **Language/语言**: [English](README.md) | [简体中文](README-zh-CN.md)
+
 A C++ wrapper library for the STMicroelectronics VL53L8CX Time-of-Flight (ToF) multi-zone ranging sensor, compatible with STM32 HAL. This library provides an object-oriented interface on top of the official VL53L8CX Ultra Lite Driver (ULD) C API.
 
 ## Features
