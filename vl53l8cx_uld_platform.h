@@ -88,7 +88,7 @@ typedef struct {
 #define VL53L8CX_PLATFORM_INVALID_PARAM ((uint8_t) 127U)
 #define VL53L8CX_PLATFORM_STATUS_ERROR 	((uint8_t) 255U)
 
-#define VL53L8CX_COMM_TIMEOUT_MS 100
+#define VL53L8CX_COMM_TIMEOUT_MS HAL_MAX_DELAY
 
 /*
  * @brief The macro below is used to define the number of target per zone sent

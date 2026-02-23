@@ -32,7 +32,7 @@
  * vl53l8cx_set_i2c_address() function is called.
  */
 
-#define VL53L8CX_DEFAULT_I2C_ADDRESS	        ((uint8_t)0x52)
+#define VL53L8CX_DEFAULT_I2C_ADDRESS	        ((uint16_t)0x52)
 
 /**
  * @brief Macro VL53L8CX_RESOLUTION_4X4 or VL53L8CX_RESOLUTION_8X8 allows
@@ -402,11 +402,11 @@ uint8_t vl53l8cx_init(
  * @param (uint16_t) i2c_address : New I2C address.
  * @return (uint8_t) status : 0 if new address is OK
  */
-
+#if defined(HAL_I2C_MODULE_ENABLED)
 uint8_t vl53l8cx_set_i2c_address(
 		VL53L8CX_Configuration		*p_dev,
 		uint16_t			i2c_address);
-
+#endif
 /**
  * @brief This function is used to get the current sensor power mode.
  * @param (VL53L8CX_Configuration) *p_dev : VL53L8CX configuration structure.

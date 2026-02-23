@@ -251,7 +251,7 @@ uint8_t vl53l8cx_init(
 	p_dev->default_xtalk = (uint8_t*)VL53L8CX_DEFAULT_XTALK;
 	p_dev->default_configuration = (uint8_t*)VL53L8CX_DEFAULT_CONFIGURATION;
 	p_dev->is_auto_stop_enabled = (uint8_t)0x0;
-
+	
 	/* SW reboot sequence */
 	status |= VL53L8CX_WrByte(&(p_dev->platform), 0x7fff, 0x00);
 	status |= VL53L8CX_WrByte(&(p_dev->platform), 0x0009, 0x04);
@@ -278,6 +278,7 @@ uint8_t vl53l8cx_init(
 	/* Wait for sensor booted (several ms required to get sensor ready ) */
 	status |= VL53L8CX_WrByte(&(p_dev->platform), 0x7fff, 0x00);
 	status |= _vl53l8cx_poll_for_answer(p_dev, 1, 0, 0x06, 0xff, 1);
+
 	if(status != (uint8_t)0){
 		goto exit;
 	}
@@ -408,6 +409,7 @@ exit:
 	return status;
 }
 
+#if defined(HAL_I2C_MODULE_ENABLED)
 uint8_t vl53l8cx_set_i2c_address(
 		VL53L8CX_Configuration		*p_dev,
 		uint16_t		        i2c_address)
@@ -416,11 +418,12 @@ uint8_t vl53l8cx_set_i2c_address(
 
 	status |= VL53L8CX_WrByte(&(p_dev->platform), 0x7fff, 0x00);
 	status |= VL53L8CX_WrByte(&(p_dev->platform), 0x4, (uint8_t)(i2c_address >> 1));
-	p_dev->platform.address = i2c_address;
+	p_dev->platform.i2c_addr = i2c_address;
 	status |= VL53L8CX_WrByte(&(p_dev->platform), 0x7fff, 0x02);
 
 	return status;
 }
+#endif
 
 uint8_t vl53l8cx_get_power_mode(
 		VL53L8CX_Configuration		*p_dev,

@@ -52,6 +52,7 @@ bool VL53L8CX::isAlive() {
     return ((status == VL53L8CX_STATUS_OK) && (alive != 0));
 }
 
+#if defined(HAL_I2C_MODULE_ENABLED)
 VL53L8CX::Status VL53L8CX::setIICAddress(uint16_t i2c_address) {
     uint8_t status = vl53l8cx_set_i2c_address(&_cfg, i2c_address);
     if (status == VL53L8CX_STATUS_OK) {
@@ -60,6 +61,7 @@ VL53L8CX::Status VL53L8CX::setIICAddress(uint16_t i2c_address) {
 
     return _map_status(status);
 }
+#endif
 
 VL53L8CX::Status VL53L8CX::startRanging() {
     uint8_t status = vl53l8cx_start_ranging(&_cfg);

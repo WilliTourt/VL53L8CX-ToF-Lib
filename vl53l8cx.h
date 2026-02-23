@@ -36,7 +36,9 @@ class VL53L8CX {
         Status begin();
 
         bool isAlive();
+        #if defined(HAL_I2C_MODULE_ENABLED)
         Status setIICAddress(uint16_t i2c_address);
+        #endif
 
         Status startRanging();
         Status stopRanging();

@@ -83,12 +83,12 @@ uint8_t VL53L8CX_WrByte(VL53L8CX_Platform *p_platform, uint16_t RegisterAdress, 
 		#if defined(HAL_I2C_MODULE_ENABLED)
 		
 			HAL_StatusTypeDef hal_ret = HAL_I2C_Mem_Write(p_platform->hi2c,
-							 p_platform->i2c_addr,
-							 RegisterAdress,
-							 I2C_MEMADD_SIZE_16BIT,
-							 &value,
-							 1,
-							 VL53L8CX_COMM_TIMEOUT_MS);
+							 							  p_platform->i2c_addr,
+							 							  RegisterAdress,
+							 							  I2C_MEMADD_SIZE_16BIT,
+							 							  &value,
+							 							  1,
+							 							  VL53L8CX_COMM_TIMEOUT_MS);
 
 			if (hal_ret == HAL_OK) { return VL53L8CX_PLATFORM_OK; }
 			else if (hal_ret == HAL_TIMEOUT) { return VL53L8CX_PLATFORM_TIMEOUT_ERROR; }
